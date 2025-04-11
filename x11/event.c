@@ -6,8 +6,8 @@ int main(void)
 {
 	Display *display;
 	Window parent;
-	int x;
-	int y;
+	register int x;
+	register int y;
 	unsigned int width;
 	unsigned int height;
 	unsigned int border_width;
@@ -18,6 +18,7 @@ int main(void)
 	unsigned long valuemask;
 	XSetWindowAttributes attributes;
 	Window window;
+	XEvent event_return;
 
 	display = XOpenDisplay(NULL);
 	if (!display)
@@ -36,15 +37,17 @@ int main(void)
 	depth = DefaultDepth(display, screen_number);
 	class = InputOutput;
 	visual = DefaultVisual(display, screen_number);
-	valuemask = CWBackPixel | CWBorderPixel;
+	valuemask = CWBackPixel | CWBorderPixel | CWEventMask;
 	attributes.background_pixel = WhitePixel(display, screen_number);
 	attributes.border_pixel = BlackPixel(display, screen_number);
+	attributes.event_mask = ButtonPressMask | ButtonMotionMask |
+		KeyPressMask;
 
 	window = XCreateWindow(display, parent, x, y, width, height,
 			border_width, depth, class, visual, valuemask,
 			&attributes);
 	
-	XStoreName(display, window, "Simple Window...");
+	XStoreName(display, window, "Events...");
 	XMapRaised(display, window);
 
 	fprintf(stdout, "window id: %ld\n"
@@ -60,9 +63,19 @@ int main(void)
 		window, x, y, width, height, border_width, screen_number, depth,
 		class, valuemask);
 
-	getchar();
-	
-	XUnmapWindow(display, window);
-	XDestroyWindow(display, window);
-	exit(0);
+	while (1) {
+		XNextEvent(display, &event_return);
+		x = event_return.xbutton.x;
+		y = event_return.xbutton.y;
+		printf("x: %d y: %d\n", x, y);
+		switch (event_return.type) {
+		case ButtonPress:
+		case MotionNotify:
+			break;
+		case KeyPress:
+			XUnmapWindow(display, window);
+			XDestroyWindow(display, window);
+			exit(0);
+		}
+	}
 }

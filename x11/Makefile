@@ -1,8 +1,8 @@
 CC:=gcc
-CFLAGS:=-Wall -Wextra -Werror -pedantic -ggdb $(shell pkg-config --cflags x11)
+CFLAGS:=-Wall -Wextra -Werror -pedantic -ggdb -std=c99 $(shell pkg-config --cflags x11)
 CLIBS:=$(shell pkg-config --libs x11)
-TARGET:=window
-SRCS:=window.c
+TARGET:=draw
+SRCS:=${TARGET}.c
 OBJS:=$(SRCS:.c=.o)
 
 ${TARGET} : ${OBJS}
